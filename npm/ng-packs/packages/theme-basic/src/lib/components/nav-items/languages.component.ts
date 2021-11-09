@@ -2,7 +2,6 @@ import { ConfigStateService, LanguageInfo, SessionStateService } from '@abp/ng.c
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import snq from 'snq';
 
 @Component({
   selector: 'abp-languages',
@@ -27,7 +26,7 @@ import snq from 'snq';
         {{ defaultLanguage$ | async }}
       </a>
       <div
-        class="dropdown-menu dropdown-menu-right border-0 shadow-sm"
+        class="dropdown-menu dropdown-menu-end border-0 shadow-sm"
         aria-labelledby="dropdownMenuLink"
         [class.d-block]="smallScreen && languageDropdown.isOpen()"
       >
@@ -53,10 +52,7 @@ export class LanguagesComponent {
     return this.languages$.pipe(
       map(
         languages =>
-          snq(
-            () => languages.find(lang => lang.cultureName === this.selectedLangCulture).displayName,
-          ),
-        '',
+          languages?.find(lang => lang.cultureName === this.selectedLangCulture).displayName || '',
       ),
     );
   }
@@ -64,9 +60,7 @@ export class LanguagesComponent {
   get dropdownLanguages$(): Observable<LanguageInfo[]> {
     return this.languages$.pipe(
       map(
-        languages =>
-          snq(() => languages.filter(lang => lang.cultureName !== this.selectedLangCulture)),
-        [],
+        languages => languages?.filter(lang => lang.cultureName !== this.selectedLangCulture) || [],
       ),
     );
   }

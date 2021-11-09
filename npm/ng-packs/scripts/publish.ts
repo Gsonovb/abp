@@ -2,6 +2,7 @@ import program from 'commander';
 import execa from 'execa';
 import fse from 'fs-extra';
 import replaceWithPreview from './replace-with-preview';
+const semverParse = require('semver/functions/parse');
 
 program
   .option(
@@ -10,8 +11,8 @@ program
   )
   .option('-r, --registry <registry>', 'target npm server registry')
   .option('-p, --preview', 'publishes with preview tag')
-  .option('-r, --rc', 'publishes with next tag')
-  .option('-g, --skipGit', 'skips git push');
+  .option('-sg, --skipGit', 'skips git push')
+  .option('-sv, --skipVersionValidation', 'skips version validation');
 
 program.parse(process.argv);
 
@@ -34,6 +35,20 @@ program.parse(process.argv);
 
     await updateVersion(program.nextVersion);
 
+    if (!program.skipVersionValidation) {
+      await execa(
+        'yarn',
+        [
+          'validate-versions',
+          '--compareVersion',
+          program.nextVersion,
+          '--path',
+          '../ng-packs/packages',
+        ],
+        { stdout: 'inherit', cwd: '../../scripts' },
+      );
+    }
+
     if (program.preview) await replaceWithPreview(program.nextVersion);
 
     await execa('yarn', ['build', '--noInstall', '--skipNgcc'], { stdout: 'inherit' });
@@ -50,7 +65,7 @@ program.parse(process.argv);
 
     let tag: string;
     if (program.preview) tag = 'preview';
-    if (program.rc) tag = 'next';
+    else if (semverParse(program.nextVersion).prerelease?.length) tag = 'next';
 
     await execa(
       'yarn',
