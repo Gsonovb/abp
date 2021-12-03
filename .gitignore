@@ -318,3 +318,7 @@ tempkey.jwk
 
 # appsettings.secrets.json
 appsettings.secrets.json
+uploadAndChangeCustomSegmentation.ps1
+updatetest.http
+.ionide/symbolCache.db
+crowdin.yml
