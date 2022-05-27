@@ -8,95 +8,103 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Volo.Abp.DependencyInjection;
 
-namespace Volo.Abp.Kafka
+namespace Volo.Abp.Kafka;
+
+public class ProducerPool : IProducerPool, ISingletonDependency
 {
-    public class ProducerPool : IProducerPool, ISingletonDependency
+    protected AbpKafkaOptions Options { get; }
+
+    protected ConcurrentDictionary<string, Lazy<IProducer<string, byte[]>>> Producers { get; }
+
+    protected TimeSpan TotalDisposeWaitDuration { get; set; } = TimeSpan.FromSeconds(10);
+    
+    protected TimeSpan DefaultTransactionsWaitDuration { get; set; } = TimeSpan.FromSeconds(30);
+
+    public ILogger<ProducerPool> Logger { get; set; }
+
+    private bool _isDisposed;
+
+    public ProducerPool(IOptions<AbpKafkaOptions> options)
     {
-        protected AbpKafkaOptions Options { get; }
+        Options = options.Value;
 
-        protected ConcurrentDictionary<string, Lazy<IProducer<string, byte[]>>> Producers { get; }
+        Producers = new ConcurrentDictionary<string, Lazy<IProducer<string, byte[]>>>();
+        Logger = new NullLogger<ProducerPool>();
+    }
 
-        protected TimeSpan TotalDisposeWaitDuration { get; set; } = TimeSpan.FromSeconds(10);
+    public virtual IProducer<string, byte[]> Get(string connectionName = null)
+    {
+        connectionName ??= KafkaConnections.DefaultConnectionName;
 
-        public ILogger<ProducerPool> Logger { get; set; }
+        return Producers.GetOrAdd(
+            connectionName, connection => new Lazy<IProducer<string, byte[]>>(() =>
+            {
+                var producerConfig = new ProducerConfig(Options.Connections.GetOrDefault(connection));
+                Options.ConfigureProducer?.Invoke(producerConfig);
 
-        private bool _isDisposed;
-
-        public ProducerPool(IOptions<AbpKafkaOptions> options)
-        {
-            Options = options.Value;
-
-            Producers = new ConcurrentDictionary<string, Lazy<IProducer<string, byte[]>>>();
-            Logger = new NullLogger<ProducerPool>();
-        }
-
-        public virtual IProducer<string, byte[]> Get(string connectionName = null)
-        {
-            connectionName ??= KafkaConnections.DefaultConnectionName;
-
-            return Producers.GetOrAdd(
-                connectionName, connection => new Lazy<IProducer<string, byte[]>>(() =>
+                if (producerConfig.TransactionalId.IsNullOrWhiteSpace())
                 {
-                    var config = Options.Connections.GetOrDefault(connection);
-
-                    Options.ConfigureProducer?.Invoke(new ProducerConfig(config));
-
-                    return new ProducerBuilder<string, byte[]>(config).Build();
-                })).Value;
-        }
-
-        public void Dispose()
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            _isDisposed = true;
-
-            if (!Producers.Any())
-            {
-                Logger.LogDebug($"Disposed producer pool with no producers in the pool.");
-                return;
-            }
-
-            var poolDisposeStopwatch = Stopwatch.StartNew();
-
-            Logger.LogInformation($"Disposing producer pool ({Producers.Count} producers).");
-
-            var remainingWaitDuration = TotalDisposeWaitDuration;
-
-            foreach (var producer in Producers.Values)
-            {
-                var poolItemDisposeStopwatch = Stopwatch.StartNew();
-
-                try
-                {
-                    producer.Value.Dispose();
+                    producerConfig.TransactionalId = Guid.NewGuid().ToString();
                 }
-                catch
-                {
-                }
+                
+                var producer = new ProducerBuilder<string, byte[]>(producerConfig).Build();
+                producer.InitTransactions(DefaultTransactionsWaitDuration);
+                
+                return producer;
+            })).Value;
+    }
 
-                poolItemDisposeStopwatch.Stop();
-
-                remainingWaitDuration = remainingWaitDuration > poolItemDisposeStopwatch.Elapsed
-                    ? remainingWaitDuration.Subtract(poolItemDisposeStopwatch.Elapsed)
-                    : TimeSpan.Zero;
-            }
-
-            poolDisposeStopwatch.Stop();
-
-            Logger.LogInformation(
-                $"Disposed Kafka Producer Pool ({Producers.Count} producers in {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms).");
-
-            if (poolDisposeStopwatch.Elapsed.TotalSeconds > 5.0)
-            {
-                Logger.LogWarning(
-                    $"Disposing Kafka Producer Pool got time greather than expected: {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms.");
-            }
-
-            Producers.Clear();
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
         }
+
+        _isDisposed = true;
+
+        if (!Producers.Any())
+        {
+            Logger.LogDebug($"Disposed producer pool with no producers in the pool.");
+            return;
+        }
+
+        var poolDisposeStopwatch = Stopwatch.StartNew();
+
+        Logger.LogInformation($"Disposing producer pool ({Producers.Count} producers).");
+
+        var remainingWaitDuration = TotalDisposeWaitDuration;
+
+        foreach (var producer in Producers.Values)
+        {
+            var poolItemDisposeStopwatch = Stopwatch.StartNew();
+        
+            try
+            {
+                producer.Value.Dispose();
+            }
+            catch
+            {
+            }
+        
+            poolItemDisposeStopwatch.Stop();
+        
+            remainingWaitDuration = remainingWaitDuration > poolItemDisposeStopwatch.Elapsed
+                ? remainingWaitDuration.Subtract(poolItemDisposeStopwatch.Elapsed)
+                : TimeSpan.Zero;
+        }
+        
+        poolDisposeStopwatch.Stop();
+        
+        Logger.LogInformation(
+            $"Disposed Kafka Producer Pool ({Producers.Count} producers in {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms).");
+        
+        if (poolDisposeStopwatch.Elapsed.TotalSeconds > 5.0)
+        {
+            Logger.LogWarning(
+                $"Disposing Kafka Producer Pool got time greather than expected: {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms.");
+        }
+
+        Producers.Clear();
     }
 }

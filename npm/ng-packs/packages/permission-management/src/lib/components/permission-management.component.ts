@@ -26,6 +26,10 @@ type PermissionWithStyle = PermissionGrantInfoDto & {
   style: string;
 };
 
+type PermissionWithGroupName = PermissionGrantInfoDto & {
+  groupName: string;
+};
+
 @Component({
   selector: 'abp-permission-management',
   templateUrl: './permission-management.component.html',
@@ -54,6 +58,9 @@ export class PermissionManagementComponent
   readonly hideBadges = false;
 
   protected _visible = false;
+
+  @Input()
+  entityDisplayName: string | undefined;
 
   @Input()
   get visible(): boolean {
@@ -91,7 +98,7 @@ export class PermissionManagementComponent
 
   selectedGroup: PermissionGroupDto;
 
-  permissions: PermissionGrantInfoDto[] = [];
+  permissions: PermissionWithGroupName[] = [];
 
   selectThisTab = false;
 
@@ -277,7 +284,7 @@ export class PermissionManagementComponent
 
   getAssignedCount(groupName: string) {
     return this.permissions.reduce(
-      (acc, val) => (val.name.split('.')[0] === groupName && val.isGranted ? acc + 1 : acc),
+      (acc, val) => (val.groupName === groupName && val.isGranted ? acc + 1 : acc),
       0,
     );
   }
@@ -304,6 +311,9 @@ function findMargin(permissions: PermissionGrantInfoDto[], permission: Permissio
   return parentPermission ? 20 : 0;
 }
 
-function getPermissions(groups: PermissionGroupDto[]): PermissionGrantInfoDto[] {
-  return groups.reduce((acc, val) => [...acc, ...val.permissions], []);
+function getPermissions(groups: PermissionGroupDto[]): PermissionWithGroupName[] {
+  return groups.reduce(
+    (acc, val) => [...acc, ...val.permissions.map(p => ({ ...p, groupName: val.name }))],
+    [],
+  );
 }

@@ -23,15 +23,20 @@ import { LocalizationModule } from './localization.module';
 import { ABP } from './models/common';
 import { LocalizationPipe } from './pipes/localization.pipe';
 import { SortPipe } from './pipes/sort.pipe';
+import { ToInjectorPipe } from './pipes/to-injector.pipe';
 import { CookieLanguageProvider } from './providers/cookie-language.provider';
 import { LocaleProvider } from './providers/locale.provider';
 import { LocalizationService } from './services/localization.service';
 import { oAuthStorage } from './strategies/auth-flow.strategy';
+import { localizationContributor, LOCALIZATIONS } from './tokens/localization.token';
 import { coreOptionsFactory, CORE_OPTIONS } from './tokens/options.token';
 import { TENANT_KEY } from './tokens/tenant-key.token';
 import { noop } from './utils/common-utils';
 import './utils/date-extensions';
 import { getInitialData, localeInitializer } from './utils/initial-utils';
+import { ShortDateTimePipe } from './pipes/short-date-time.pipe';
+import { ShortTimePipe } from './pipes/short-time.pipe';
+import { ShortDatePipe } from './pipes/short-date.pipe';
 
 export function storageFactory(): OAuthStorage {
   return oAuthStorage;
@@ -44,57 +49,61 @@ export function storageFactory(): OAuthStorage {
  * This module will be imported and exported by all others.
  */
 @NgModule({
-  exports: [
-    CommonModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-    LocalizationModule,
-    AbstractNgModelComponent,
-    AutofocusDirective,
-    DynamicLayoutComponent,
-    ForDirective,
-    FormSubmitDirective,
-    InitDirective,
-    InputEventDebounceDirective,
-    PermissionDirective,
-    ReplaceableRouteContainerComponent,
-    ReplaceableTemplateDirective,
-    RouterOutletComponent,
-    SortPipe,
-    StopPropagationDirective,
-  ],
-  imports: [
-    OAuthModule,
-    CommonModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
-    LocalizationModule,
-  ],
-  declarations: [
-    AbstractNgModelComponent,
-    AutofocusDirective,
-    DynamicLayoutComponent,
-    ForDirective,
-    FormSubmitDirective,
-    InitDirective,
-    InputEventDebounceDirective,
-    PermissionDirective,
-    ReplaceableRouteContainerComponent,
-    ReplaceableTemplateDirective,
-    RouterOutletComponent,
-    SortPipe,
-    StopPropagationDirective,
-  ],
-  providers: [LocalizationPipe],
-  entryComponents: [
-    RouterOutletComponent,
-    DynamicLayoutComponent,
-    ReplaceableRouteContainerComponent,
-  ],
+    exports: [
+        CommonModule,
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        RouterModule,
+        LocalizationModule,
+        AbstractNgModelComponent,
+        AutofocusDirective,
+        DynamicLayoutComponent,
+        ForDirective,
+        FormSubmitDirective,
+        InitDirective,
+        InputEventDebounceDirective,
+        PermissionDirective,
+        ReplaceableRouteContainerComponent,
+        ReplaceableTemplateDirective,
+        RouterOutletComponent,
+        SortPipe,
+        StopPropagationDirective,
+        ToInjectorPipe,
+        ShortDateTimePipe,
+        ShortTimePipe,
+        ShortDatePipe
+    ],
+    imports: [
+        OAuthModule,
+        CommonModule,
+        HttpClientModule,
+        FormsModule,
+        ReactiveFormsModule,
+        RouterModule,
+        LocalizationModule,
+    ],
+    declarations: [
+        AbstractNgModelComponent,
+        AutofocusDirective,
+        DynamicLayoutComponent,
+        ForDirective,
+        FormSubmitDirective,
+        InitDirective,
+        InputEventDebounceDirective,
+        PermissionDirective,
+        ReplaceableRouteContainerComponent,
+        ReplaceableTemplateDirective,
+        RouterOutletComponent,
+        SortPipe,
+        StopPropagationDirective,
+        ToInjectorPipe,
+        ShortDateTimePipe,
+        ShortTimePipe,
+        ShortDatePipe
+
+    ],
+    providers: [LocalizationPipe]
 })
 export class BaseCoreModule {}
 
@@ -176,6 +185,26 @@ export class CoreModule {
         },
         { provide: OAuthStorage, useFactory: storageFactory },
         { provide: TENANT_KEY, useValue: options.tenantKey || '__tenant' },
+        {
+          provide: LOCALIZATIONS,
+          multi: true,
+          useValue: localizationContributor(options.localizations),
+          deps: [LocalizationService],
+        },
+      ],
+    };
+  }
+
+  static forChild(options = {} as ABP.Child): ModuleWithProviders<RootCoreModule> {
+    return {
+      ngModule: RootCoreModule,
+      providers: [
+        {
+          provide: LOCALIZATIONS,
+          multi: true,
+          useValue: localizationContributor(options.localizations),
+          deps: [LocalizationService],
+        },
       ],
     };
   }

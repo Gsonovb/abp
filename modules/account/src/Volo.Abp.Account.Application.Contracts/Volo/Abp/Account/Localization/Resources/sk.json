@@ -1,6 +1,7 @@
 {
   "culture": "sk",
   "texts": {
+    "Menu:Account": "Účet",
     "UserName": "Používateľské meno",
     "EmailAddress": "Emailová adresa",
     "UserNameOrEmailAddress": "Používateľské meno alebo emailová adresa",
@@ -36,6 +37,7 @@
     "PasswordChanged": "Heslo bolo zmenené",
     "NewPasswordConfirmFailed": "Prosím potvrďte nové heslo.",
     "Manage": "Spravovať",
+    "MyAccount": "Môj účet",
     "DisplayName:Abp.Account.IsSelfRegistrationEnabled": "Je povolená samoregistrácia",
     "Description:Abp.Account.IsSelfRegistrationEnabled": "Či si používateľ môže účet zaregistrovať sám.",
     "DisplayName:Abp.Account.EnableLocalLogin": "Overenie pomocou lokálneho konta",

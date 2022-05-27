@@ -4,19 +4,18 @@ This document provides a road map, release schedule and planned features for the
 
 ## Next Versions
 
-### v5.0
+### v6.0
 
-This version will focus on the following works:
+In [6.0 milestone](https://github.com/abpframework/abp/milestone/61), we will be mostly working on the following topics:
 
-* Upgrading to .NET 6.0 ([#9004](https://github.com/abpframework/abp/issues/9004))
-* Upgrading to Bootstrap 5.x ([#8922](https://github.com/abpframework/abp/issues/8922))
-* C# and JavaScript Static Client Proxy Generation ([#9864](https://github.com/abpframework/abp/issues/9864))
-* Revisit the microservice demo solution ([#8385](https://github.com/abpframework/abp/issues/8385))
-* Publishing distributed events as transactional ([#6126](https://github.com/abpframework/abp/issues/6126))
-* Performance optimizations; Enabling .NET Trimming, using source generators and reducing reflection, etc.
-* Improving the abp.io platform and work more on contents and documents
+* Providing an OpenIddict integration to replace current IdentityServer4 integration.
+* Maturing and documenting the [eShopOnAbp](https://github.com/abpframework/eShopOnAbp) project, writing a free e-book that explains the solution.
+* Working on the [LeptonX](https://blog.abp.io/abp/LeptonX-Theme-for-ABP-Framework-Alpha-Release) theme and making it as the default theme for the ABP Framework UI options.
+* Improvements on the existing features and providing more guides.
 
-**Planned release date**: End of Quarter 4, 2021. See the [5.0 milestone](https://github.com/abpframework/abp/milestone/51) to track the progress.
+The planned stable release date for v6.0 is **July, 2022**.
+
+> After the version 6.0, we will be working for ABP 7.0 which will be released in the end of 2022 based on .NET 7.0.
 
 ## Backlog Items
 
@@ -24,10 +23,9 @@ The *Next Versions* section above shows the main focus of the planned versions. 
 
 Here, a list of major items in the backlog we are considering to work on in the next versions.
 
-* ([#497](https://github.com/abpframework/abp/issues/497)) API Versioning system: finalize & document
-* ([#7221](https://github.com/abpframework/abp/issues/7221)) Alternative to IdentityServer4
-* ([#2183](https://github.com/abpframework/abp/issues/2183)) Dapr integration
-* ([#236](https://github.com/abpframework/abp/issues/236)) Resource based authorization system
+* [#2183](https://github.com/abpframework/abp/issues/2183) / Dapr integration
+* [#6655](https://github.com/abpframework/abp/pull/6655) / Use Typescript for the MVC UI
+* [#236](https://github.com/abpframework/abp/issues/236) / Resource based authorization system
 * [#2882](https://github.com/abpframework/abp/issues/2882) / Providing a gRPC integration infrastructure (while it is [already possible](https://github.com/abpframework/abp-samples/tree/master/GrpcDemo) to create or consume gRPC endpoints for your application, we plan to create endpoints for the [standard application modules](https://docs.abp.io/en/abp/latest/Modules/Index))
 * [#1754](https://github.com/abpframework/abp/issues/1754) / Multi-lingual entities
 * [#57](https://github.com/abpframework/abp/issues/57) / Built-in CQRS infrastructure

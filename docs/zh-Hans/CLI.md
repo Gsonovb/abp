@@ -29,6 +29,7 @@ dotnet tool update -g Volo.Abp.Cli
 * **`help`**: 展示ABP CLI的用法帮助信息.
 * **`new`**：生成基于ABP的[启动模板](Startup-Templates/Index.md).
 * **`update`**：自动更新的ABP解决方案ABP相关的NuGet和NPM包.
+* **`clean`**: 删除当前目录下所有的 `BIN` 和 `OBJ` 子目录.
 * **`add-package`**: 添加ABP包到项目.
 * **`add-module`**: 添加[应用模块](https://docs.abp.io/en/abp/latest/Modules/Index)到解决方案.
 * **`generate-proxy`**: 生成客户端代理以使用HTTP API端点.
@@ -38,6 +39,7 @@ dotnet tool update -g Volo.Abp.Cli
 * **`switch-to-stable`**: 切换解决方案所有ABP相关包为最新的稳定版本.
 * **`translate`**: 当源代码控制存储库中有多个JSON[本地化]（Localization.md文件时,可简化翻译本地化文件的过程.
 * **`login`**: 使用你在[abp.io](https://abp.io/)的用户名和密码在你的计算机上认证.
+* **`login-info`**: 展示当前登录用户信息.
 * **`logout`**: 在你的计算机注销认证.
 * **`install-libs`**: 为 MVC / Razor Pages 和 Blazor Server UI 类型安装NPM包.
 
@@ -77,6 +79,8 @@ abp new Acme.BookStore
 * Acme.BookStore是解决方案的名称.
 * 常见的命名方式类似于 *YourCompany.YourProject*. 不过你可以使用自己喜欢的方式,如 *YourProject* (单级命名空间) 或 *YourCompany.YourProduct.YourModule* (三级命名空间).
 
+参阅[ABP CLI 创建新解决方案示例](CLI-New-Command-Samples.md)查看更多示例.
+
 #### Options
 
 * `--template` 或者 `-t`: 指定模板. 默认的模板是 `app`,会生成web项目.可用的模板有:
@@ -85,11 +89,11 @@ abp new Acme.BookStore
       * `mvc`: ASP.NET Core MVC.此模板的其他选项:
         * `--tiered`: 创建分层解决方案,Web和Http Api层在物理上是分开的.如果未指定会创建一个分层的解决方案,此解决方案没有那么复杂,适合大多数场景.
       * `angular`: Angular. 这个模板还有一些额外的选项:
-        * `--separate-identity-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
+        * `--separate-auth-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
       * `blazor`: Blazor. 这个模板还有一些额外的选项:
-        * `--separate-identity-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
+        * `--separate-auth-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
       * `none`: 无UI. 这个模板还有一些额外的选项:
-        * `--separate-identity-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
+        * `--separate-auth-server`: 将Identity Server应用程序与API host应用程序分开. 如果未指定,则服务器端将只有一个端点.
     * `--mobile` 或者 `-m`: 指定移动应用程序框架. 如果未指定,则不会创建任何移动应用程序,其他选项:
       * `none`: 不包含移动应用程序.
       * `react-native`: React Native.
@@ -99,6 +103,15 @@ abp new Acme.BookStore
   * `module`: [Module template](Startup-Templates/Module.md). 其他选项:
     * `--no-ui`: 不包含UI.仅创建服务模块(也称为微服务 - 没有UI).
   * **`console`**: [Console template](Startup-Templates/Console.md).
+  * **`app-nolayers`**: 应用程序单层模板
+  * `--ui` 或者 `-u`: 指定ui框架.默认`mvc`框架.其他选项:
+    * `mvc`: ASP.NET Core MVC.
+    * `angular`: Angular.
+    * `blazor-server`: Blazor Server.
+    * `none`: 不包含UI.
+  * `--database-provider` 或 `-d`: 或者 `-d`: 指定数据库提供程序.默认是 `ef`.其他选项:
+      * `ef`: Entity Framework Core.
+      * `mongodb`: MongoDB.
 * `--output-folder` 或者 `-o`: 指定输出文件夹,默认是当前目录.
 * `--version` 或者 `-v`: 指定ABP和模板的版本.它可以是 [release tag](https://github.com/abpframework/abp/releases) 或者 [branch name](https://github.com/abpframework/abp/branches). 如果没有指定,则使用最新版本.大多数情况下,你会希望使用最新的版本.
 * `--preview`: 使用最新的预览版本.
@@ -128,6 +141,16 @@ abp update [options]
 * `--solution-name` 或 `-sn`: 指定解决方案名称. 默认在目录中搜索`*.sln`文件.
 * `--check-all`: 分别检查每个包的新版本. 默认是 `false`.
 * `--version` or `-v`: 指定用于升级的版本. 如果没有指定,则使用最新版本.
+
+### clean
+
+删除当前目录下所有的 `BIN` 和 `OBJ` 子目录.
+
+用法:
+
+````bash
+abp clean
+````
 
 ### add-package
 
@@ -364,6 +387,14 @@ abp login <username> -p <password> -o <organization>  # You can enter both your 
 > 当使用-p参数,请注意,因为你的密码是可见的. 它对于CI / CD自动化管道很有用.
 
 请注意,新的登录将终止先前的会话并创建一个新的会话.
+
+### login-info
+
+展示你的登录信息, 如 **名称** , **用户名** , **地址** 和 **组织**.
+
+```bash
+abp login-info
+```
 
 ### logout
 

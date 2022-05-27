@@ -1,15 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
-namespace Volo.Abp.BackgroundWorkers.Hangfire
+namespace Volo.Abp.BackgroundWorkers.Hangfire;
+
+public interface IHangfireBackgroundWorker : IBackgroundWorker
 {
-    public interface IHangfireBackgroundWorker :　IBackgroundWorker
-    {
-        string RecurringJobId { get; set; }
+    string RecurringJobId { get; set; }
 
-        string CronExpression { get; set; }
+    string CronExpression { get; set; }
+    
+    TimeZoneInfo TimeZone  { get; set; }
 
-        Task DoWorkAsync();
-    }
+    string Queue  { get; set; }
+
+    Task DoWorkAsync();
 }
 
 

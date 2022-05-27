@@ -2,7 +2,7 @@
 
 <hr class="my-3" />
 
-<form *ngIf="form" [formGroup]="form" (ngSubmit)="submit()" validateOnSubmit>
+<form *ngIf="form" [formGroup]="form" (ngSubmit)="submit()" [validateOnSubmit]="true">
   <div class="mb-3 form-group">
     <label class="form-label">{{
       'AbpSettingManagement::DefaultFromDisplayName' | abpLocalization
@@ -49,7 +49,7 @@
 
   <div
     [@collapse]="{
-      value: form.get('smtpUseDefaultCredentials').value ? 'collapsed' : 'expanded',
+      value: form.get('smtpUseDefaultCredentials')?.value ? 'collapsed' : 'expanded',
       params: { time: '200ms', easing: 'linear' }
     }"
   >
@@ -65,7 +65,7 @@
 
     <div class="mb-3 form-group">
       <label class="form-label">{{ 'AbpSettingManagement::SmtpPassword' | abpLocalization }}</label>
-      <input type="text" class="form-control" formControlName="smtpPassword" />
+      <input type="password" class="form-control" formControlName="smtpPassword" />
     </div>
   </div>
 

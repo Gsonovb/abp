@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import { AbpApplicationConfigurationService } from '../proxy/volo/abp/asp-net-core/mvc/application-configurations/abp-application-configuration.service';
-import { ApplicationConfigurationDto } from '../proxy/volo/abp/asp-net-core/mvc/application-configurations/models';
+import { ApplicationConfigurationDto, ApplicationGlobalFeatureConfigurationDto } from '../proxy/volo/abp/asp-net-core/mvc/application-configurations/models';
 import { InternalStore } from '../utils/internal-store-utils';
 
 @Injectable({
@@ -48,14 +48,14 @@ export class ConfigStateService {
     return this.store.state;
   }
 
-  getDeep$(keys: string[] | string) {
+  getDeep$(keys: string[] | string): Observable<any> {
     keys = splitKeys(keys);
 
     return this.store
       .sliceState(state => state)
       .pipe(
         map(state => {
-          return (keys as string[]).reduce((acc, val) => {
+          return (keys as string[]).reduce((acc: any, val) => {
             if (acc) {
               return acc[val];
             }
@@ -66,10 +66,10 @@ export class ConfigStateService {
       );
   }
 
-  getDeep(keys: string[] | string) {
+  getDeep(keys: string[] | string): any {
     keys = splitKeys(keys);
 
-    return (keys as string[]).reduce((acc, val) => {
+    return (keys as string[]).reduce((acc: any, val) => {
       if (acc) {
         return acc[val];
       }
@@ -138,6 +138,30 @@ export class ConfigStateService {
         }),
       );
   }
+
+  getGlobalFeatures() {
+    return this.store.state.globalFeatures;
+  }
+
+  getGlobalFeatures$() {
+    return this.store.sliceState(state => state.globalFeatures);
+  }
+
+  private isGlobalFeatureEnabled(key: string, globalFeatures: ApplicationGlobalFeatureConfigurationDto) {
+    const features = globalFeatures.enabledFeatures || []
+    return features.some(f => key === f);
+  }
+
+  getGlobalFeatureIsEnabled(key: string) {
+    return this.isGlobalFeatureEnabled(key, this.store.state.globalFeatures);
+  }
+
+  getGlobalFeatureIsEnabled$(key: string) {
+    return this.store.sliceState(state => this.isGlobalFeatureEnabled(key, state.globalFeatures));
+  }
+
+
+
 }
 
 function splitKeys(keys: string[] | string): string[] {

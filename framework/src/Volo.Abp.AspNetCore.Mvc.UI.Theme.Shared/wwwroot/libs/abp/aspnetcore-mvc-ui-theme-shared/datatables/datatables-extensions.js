@@ -168,12 +168,11 @@ var abp = abp || {};
 
             if ($dropdownItemsContainer.find('li').length > 0) {
                 $dropdownItemsContainer.appendTo($container);
-                $dropdownButton.prependTo($container);
+            } else {
+                $dropdownButton.attr('disabled', 'disabled');
             }
 
-            if ($dropdownItemsContainer.children().length === 0) {
-                return "";
-            }
+            $dropdownButton.prependTo($container);
 
             return $container;
         };
@@ -266,7 +265,7 @@ var abp = abp || {};
             {
                 fnRowCallback: function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     if (_existingDefaultFnRowCallback) {
-                        _existingDefaultFnRowCallback(this, nRow, aData, iDisplayIndex, iDisplayIndexFull);
+                        _existingDefaultFnRowCallback(nRow, aData, iDisplayIndex, iDisplayIndexFull);
                     }
 
                     renderRowActions(this, nRow, aData, iDisplayIndex, iDisplayIndexFull);
@@ -366,10 +365,12 @@ var abp = abp || {};
                 }
 
                 //Text filter
-                if (requestData.search && requestData.search.value !== "") {
-                    input.filter = requestData.search.value;
-                } else {
-                    input.filter = null;       
+                if(settings.oInit.searching !== false){
+                    if (requestData.search && requestData.search.value !== "") {
+                        input.filter = requestData.search.value;
+                    } else {
+                        input.filter = null;
+                    }
                 }
 
                 if (callback) {
@@ -430,9 +431,7 @@ var abp = abp || {};
 
             configuration.language = datatables.defaultConfigurations.language();
 
-            if(configuration.dom){
-                configuration.dom += datatables.defaultConfigurations.dom;
-            }else{
+            if(!configuration.dom){
                 configuration.dom = datatables.defaultConfigurations.dom;
             }
 

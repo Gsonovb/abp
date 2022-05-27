@@ -3,7 +3,7 @@ import { NgbDateStruct, NgbTimeStruct } from '@ng-bootstrap/ng-bootstrap';
 
 @Injectable()
 export class DateTimeAdapter {
-  value: NgbDateTimeStruct;
+  value!: NgbDateTimeStruct;
 
   fromModel(value: string | Date): NgbDateTimeStruct | null {
     if (!value) return null;
@@ -30,6 +30,7 @@ export class DateTimeAdapter {
     const now = new Date();
 
     value = {
+      // TODO look for strict mode errors
       year: now.getUTCFullYear(),
       month: now.getMonth() + 1,
       day: now.getDate(),

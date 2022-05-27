@@ -18,6 +18,7 @@ import {
       #button
       [id]="buttonId"
       [attr.type]="buttonType"
+      [attr.form]="formName"
       [ngClass]="buttonClass"
       [disabled]="loading || disabled"
       (click.stop)="click.next($event); abpClick.next($event)"
@@ -37,18 +38,21 @@ export class ButtonComponent implements OnInit {
 
   @Input()
   buttonType = 'button';
+  
+  @Input()
+  formName?: string = undefined;
 
   @Input()
-  iconClass: string;
+  iconClass?: string;
 
   @Input()
   loading = false;
 
   @Input()
-  disabled = false;
+  disabled: boolean | undefined = false;
 
   @Input()
-  attributes: ABP.Dictionary<string>;
+  attributes?: ABP.Dictionary<string>;
 
   @Output() readonly click = new EventEmitter<MouseEvent>();
 
@@ -63,7 +67,7 @@ export class ButtonComponent implements OnInit {
   @Output() readonly abpBlur = new EventEmitter<FocusEvent>();
 
   @ViewChild('button', { static: true })
-  buttonRef: ElementRef<HTMLButtonElement>;
+  buttonRef!: ElementRef<HTMLButtonElement>;
 
   get icon(): string {
     return `${this.loading ? 'fa fa-spinner fa-spin' : this.iconClass || 'd-none'}`;
@@ -74,7 +78,9 @@ export class ButtonComponent implements OnInit {
   ngOnInit() {
     if (this.attributes) {
       Object.keys(this.attributes).forEach(key => {
-        this.renderer.setAttribute(this.buttonRef.nativeElement, key, this.attributes[key]);
+        if (this.attributes?.[key]) {
+          this.renderer.setAttribute(this.buttonRef.nativeElement, key, this.attributes[key]);
+        }
       });
     }
   }
