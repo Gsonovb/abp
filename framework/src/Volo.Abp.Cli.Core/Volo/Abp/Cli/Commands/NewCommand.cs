@@ -10,7 +10,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Volo.Abp.Cli.Args;
 using Volo.Abp.Cli.Commands.Services;
+using Volo.Abp.Cli.LIbs;
 using Volo.Abp.Cli.ProjectBuilding;
+using Volo.Abp.Cli.ProjectBuilding.Building;
 using Volo.Abp.Cli.ProjectModification;
 using Volo.Abp.Cli.Utils;
 using Volo.Abp.DependencyInjection;
@@ -19,7 +21,7 @@ namespace Volo.Abp.Cli.Commands;
 
 public class NewCommand : ProjectCreationCommandBase, IConsoleCommand, ITransientDependency
 {
-    public ILogger<NewCommand> Logger { get; set; }
+    public const string Name = "new";
 
     protected TemplateProjectBuilder TemplateProjectBuilder { get; }
     public ITemplateInfoProvider TemplateInfoProvider { get; }
@@ -28,13 +30,14 @@ public class NewCommand : ProjectCreationCommandBase, IConsoleCommand, ITransien
         , ITemplateInfoProvider templateInfoProvider,
         ConnectionStringProvider connectionStringProvider,
         SolutionPackageVersionFinder solutionPackageVersionFinder,
-        ICmdHelper cmdHelper)
-    : base(connectionStringProvider, solutionPackageVersionFinder, cmdHelper)
+        ICmdHelper cmdHelper,
+        IInstallLibsService installLibsService,
+        AngularPwaSupportAdder angularPwaSupportAdder,
+        InitialMigrationCreator ınitialMigrationCreator)
+    : base(connectionStringProvider, solutionPackageVersionFinder, cmdHelper, installLibsService, angularPwaSupportAdder, ınitialMigrationCreator)
     {
         TemplateProjectBuilder = templateProjectBuilder;
         TemplateInfoProvider = templateInfoProvider;
-
-        Logger = NullLogger<NewCommand>.Instance;
     }
 
     public async Task ExecuteAsync(CommandLineArgs commandLineArgs)
@@ -77,6 +80,10 @@ public class NewCommand : ProjectCreationCommandBase, IConsoleCommand, ITransien
         Logger.LogInformation($"'{projectName}' has been successfully created to '{projectArgs.OutputFolder}'");
 
         RunGraphBuildForMicroserviceServiceTemplate(projectArgs);
+        await CreateInitialMigrationsAsync(projectArgs);
+        await RunInstallLibsForWebTemplateAsync(projectArgs);
+        ConfigurePwaSupportForAngular(projectArgs);
+
         OpenRelatedWebPage(projectArgs, template, isTiered, commandLineArgs);
     }
 
@@ -105,7 +112,7 @@ public class NewCommand : ProjectCreationCommandBase, IConsoleCommand, ITransien
         sb.AppendLine("--tiered                                    (if supported by the template)");
         sb.AppendLine("--no-ui                                     (if supported by the template)");
         sb.AppendLine("--no-random-port                            (Use template's default ports)");
-        sb.AppendLine("--separate-identity-server                  (if supported by the template)");
+        sb.AppendLine("--separate-auth-server                      (if supported by the template)");
         sb.AppendLine("--local-framework-ref --abp-path <your-local-abp-repo-path>  (keeps local references to projects instead of replacing with NuGet package references)");
         sb.AppendLine("");
         sb.AppendLine("Examples:");

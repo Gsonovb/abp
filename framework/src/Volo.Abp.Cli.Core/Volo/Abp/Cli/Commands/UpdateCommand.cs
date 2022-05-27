@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace Volo.Abp.Cli.Commands;
 
 public class UpdateCommand : IConsoleCommand, ITransientDependency
 {
+    public const string Name = "update";
+    
     public ILogger<UpdateCommand> Logger { get; set; }
 
     private readonly VoloNugetPackagesVersionUpdater _nugetPackagesVersionUpdater;
@@ -54,22 +57,30 @@ public class UpdateCommand : IConsoleCommand, ITransientDependency
 
     private async Task UpdateNugetPackages(CommandLineArgs commandLineArgs, string directory, string version)
     {
-
-        var solution = commandLineArgs.Options.GetOrNull(Options.SolutionName.Short, Options.SolutionName.Long);
-        if (solution.IsNullOrWhiteSpace())
+        var solutions = new List<string>();
+        var givenSolution = commandLineArgs.Options.GetOrNull(Options.SolutionName.Short, Options.SolutionName.Long);
+        
+        if (givenSolution.IsNullOrWhiteSpace())
         {
-            solution = Directory.GetFiles(directory, "*.sln", SearchOption.AllDirectories).FirstOrDefault();
+            solutions.AddRange(Directory.GetFiles(directory, "*.sln", SearchOption.AllDirectories));
+        }
+        else
+        {
+            solutions.Add(givenSolution);
         }
 
         var checkAll = commandLineArgs.Options.ContainsKey(Options.CheckAll.Long);
 
-        if (solution != null)
+        if (solutions.Any())
         {
-            var solutionName = Path.GetFileName(solution).RemovePostFix(".sln");
+            foreach (var solution in solutions)
+            {
+                var solutionName = Path.GetFileName(solution).RemovePostFix(".sln");
 
-            await _nugetPackagesVersionUpdater.UpdateSolutionAsync(solution, checkAll: checkAll, version: version);
+                await _nugetPackagesVersionUpdater.UpdateSolutionAsync(solution, checkAll: checkAll, version: version);
 
-            Logger.LogInformation($"Volo packages are updated in {solutionName} solution.");
+                Logger.LogInformation($"Volo packages are updated in {solutionName} solution.");
+            }
             return;
         }
 
